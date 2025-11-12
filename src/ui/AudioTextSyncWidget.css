@@ -1,0 +1,69 @@
+/*
+Place your custom CSS here
+*/
+.widget-hello-world {}
+
+.word {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 2px 4px;
+    transition:
+        transform 0.25s ease,
+        background-color 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease;
+    border-radius: 4px;
+}
+
+/* The pretty highlight */
+.word.active {
+    background-color: rgba(255, 230, 120, 0.45);
+    /* soft warm glow */
+    color: #000;
+}
+
+.play-pause-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #aaa;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.Readable-container {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    /* push children to left and right */
+    align-items: flex-start;
+    flex-direction: row;
+}
+
+/* Left column (English) */
+.English-container {
+    box-sizing: border-box;
+    text-align: left;
+    direction: ltr;
+    width: 100%;
+}
+
+/* Right column (Arabic) */
+.Arabic-container {
+    box-sizing: border-box;
+    text-align: right;
+    direction: rtl;
+    width: 100%;
+    /* ensure proper Arabic flow */
+}
+
+/* Stacked layout on narrow screens */
+@media (max-width: 640px) {
+    .Readable-container {
+        flex-direction: column;
+    }
+
+    .English-container,
+    .Arabic-container {
+        width: 100%;
+    }
+}

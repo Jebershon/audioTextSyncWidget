@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="mendix.audiotextsyncwidget.AudioTextSyncWidget" pluginWidget="true" needsEntityContext="true" offlineCapable="true"
+        supportedPlatform="Web"
+        xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    <name>Audio Text Sync Widget</name>
+    <description>A simple widget which gets a base64 video format and use an API inorder to return a text and on playing the audio the text will be highlighted synchronously</description>
+    <icon>iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAAAsTAAALEwEAmpwYAAABmklEQVR4nO2aW0oDMRSG/3V4ee4epL6rmyrMiXupRXRHFUbfSqW6gV+CFa0yzT2T1vPBeQjtTPI1JzmQBlAURVEUpSkoOKfgnoJ3GjBL2HcJHthhguZkDdbZRP/GmjOcoRVoZ7ac7Fcs0ArMmcbD8YZWoHstXlAwTZUO7nf/3nBHg9MiwkgdYG7h71hFSTNV2DMDCgjbmFcXRuB7sgoLNuWFZXdGY4VjSX4vA4Vd7cMTlv0z6GoPrelmheEQCm2rcIMpPeUtLhNSeuf59oVNnU3L9X0aPNPgenRhOjIgo7CNfnxhE/b50QlzYM1mEO4puGpP2PhF8MA8x5tdmJ4zeDjCUuUAoCFhg8f/JdxhQsFrbeHR6vCPk8uFPXtqSLhMWRoLFTaV6vChocLHPgCqcGXoKj8dbih4Ci5ln8+UqcMpeNTbPrp+C15C+yuOCv/CpiUNlhHCyybrMHXTKosK14YqXBYVrg0LHhoU+UM8le0Fk3GEY648pGIvlmwvmNSWXXGGk2SBGGzH9teulN62j/losoqiKIqiwJcPqkNVSscK7bIAAAAASUVORK5CYII=</icon>
+    <properties>
+        <propertyGroup caption="General">
+            <property key="Base64" type="textTemplate" required="false">
+                <caption>Base64 format of Audio</caption>
+                <description>Base64 encoded audio input</description>
+            </property>
+            <property key="JSON" type="textTemplate" required="false">
+                <caption>JSON format of Transcription</caption>
+                <description>JSON encoded transcription output</description>
+            </property>
+            <property key="Line" type="integer" defaultValue="5" required="true">
+                <caption>Number of words</caption>
+                <description>Number of words per line</description>
+            </property>
+        </propertyGroup>
+    </properties>
+</widget>

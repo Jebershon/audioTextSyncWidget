@@ -1,0 +1,42 @@
+{
+  "name": "audiotextsyncwidget",
+  "widgetName": "AudioTextSyncWidget",
+  "version": "1.0.0",
+  "description": "A simple widget which gets a base64 video format and use an API inorder to return a text and on playing the audio the text will be highlighted synchronously",
+  "copyright": "© Mendix Technology BV 2022. All rights reserved.",
+  "author": "Jebershon Vetha Singh",
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "Apache-2.0",
+  "config": {
+    "projectPath": "./tests/testProject",
+    "mendixHost": "http://localhost:8080",
+    "developmentPort": 3000
+  },
+  "packagePath": "mendix",
+  "scripts": {
+    "start": "pluggable-widgets-tools start:server",
+    "dev": "pluggable-widgets-tools start:web",
+    "build": "pluggable-widgets-tools build:web",
+    "lint": "pluggable-widgets-tools lint",
+    "lint:fix": "pluggable-widgets-tools lint:fix",
+    "prerelease": "npm run lint",
+    "release": "pluggable-widgets-tools release:web"
+  },
+  "devDependencies": {
+    "@mendix/pluggable-widgets-tools": "^10.15.0"
+  },
+  "dependencies": {
+    "classnames": "^2.2.6",
+    "wavesurfer.js": "^7.11.1"
+  },
+  "resolutions": {
+    "react": "^18.2.0",
+    "react-native": "0.72.7"
+  },
+  "overrides": {
+    "react": "^18.2.0",
+    "react-native": "0.72.7"
+  }
+}

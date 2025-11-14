@@ -1,6 +1,10 @@
 import React, { createElement, useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 
+// Play / Pause Icons
+const PLAY_ICON = "https://image2url.com/images/1763104709864-48218e45-5029-416e-9125-19454c629e2b.png";
+const PAUSE_ICON = "https://image2url.com/images/1763104608200-b1605ff1-b8a5-441d-a2c7-72816da79cee.png";
+
 function getAudioSrc(base64) {
     if (!base64 || base64.length < 50) return null;
     if (base64.trim().startsWith("UklGR")) {
@@ -9,35 +13,42 @@ function getAudioSrc(base64) {
     return `data:audio/mp3;base64,${base64}`;
 }
 
-export function AudioTextSync({ Base64, jsondata, line }) {
+export function AudioTextSync({ Base64, jsondata, line, isArabic }) {
     const waveRef = useRef(null);
     const wavesurfer = useRef(null);
-    const transcriptRef = useRef(null);
+    const playPauseImgRef = useRef(null);
+
     const [sentences, setSentences] = useState([]);
     const [currentTime, setCurrentTime] = useState(0);
-    console.log("Base64 received:", Base64?.substring(0, 40));
-    console.log("JSON received:", jsondata);
-    const audioSrc = getAudioSrc(Base64);
-    const WORDS_PER_LINE = line; // 👈 change this constant for line size control
-    console.log("WORDS_PER_LINE:", WORDS_PER_LINE);
+    // const [showTranscribe, setShowTranscribe] = useState(false);
 
-    // Parse JSON data
+    const audioSrc = getAudioSrc(Base64);
+    const WORDS_PER_LINE = line;
+    let isArabicFlag = false; // Placeholder, update as needed
+    if (isArabic === 'false') {
+        isArabicFlag = false;
+    }
+    if (isArabic === 'true') {
+        isArabicFlag = true;
+    }
+
+    // Parse JSON
     useEffect(() => {
+        if (!jsondata) return;
         try {
-            if (!jsondata) return;
             const raw = typeof jsondata === "string" ? JSON.parse(jsondata) : jsondata;
-            if (!raw.segments || !Array.isArray(raw.segments)) {
-                console.error("JSON does not contain segments array:", raw);
-                return;
-            }
-            const mapped = raw.segments.map(s => ({
-                start: (s.startMs || 0) / 1000,
-                end: (s.endMs || 0) / 1000,
-                text: s.text || ""
-            }));
-            setSentences(mapped);
-        } catch (err) {
-            console.error("JSON parsing failed:", err);
+            if (!raw.segments) return;
+
+            setSentences(
+                raw.segments.map(s => ({
+                    start: (s.startMs || 0) / 1000,
+                    end: (s.endMs || 0) / 1000,
+                    text_en: s.text_en || "",
+                    text_ar: s.text_ar || ""
+                }))
+            );
+        } catch (e) {
+            console.error("JSON parse failed:", e);
         }
     }, [jsondata]);
 
@@ -45,32 +56,45 @@ export function AudioTextSync({ Base64, jsondata, line }) {
     useEffect(() => {
         if (!waveRef.current || !audioSrc) return;
 
-        const timeout = setTimeout(() => {
-            wavesurfer.current = WaveSurfer.create({
-                container: waveRef.current,
-                waveColor: "rgba(197, 170, 93, .95)",
-                progressColor: "#4a9c2d",
-                height: 80,
-                responsive: true,
-                normalize: true
-            });
+        // Generate gradient
+        const ctx = document.createElement("canvas").getContext("2d");
+        const gradient_before = ctx.createLinearGradient(0, 0, 0, 150);
+        gradient_before.addColorStop(0, "#ffedc8ff");
+        gradient_before.addColorStop(0.7, "#ffd780ff");
+        gradient_before.addColorStop(1, "#ffc531ff");
 
-            // Track audio time
-            wavesurfer.current.on("audioprocess", () => {
-                const t = wavesurfer.current.getCurrentTime();
-                setCurrentTime(t);
-            });
+        const gradient_after = ctx.createLinearGradient(0, 0, 0, 150);
+        gradient_after.addColorStop(0, "#fad074ff");
+        gradient_after.addColorStop(0.7, "#ab8c49ff");
+        gradient_after.addColorStop(1, "#000000ff");
 
-            wavesurfer.current.on("ready", () => {
-                console.log("WaveSurfer READY");
-            });
+        wavesurfer.current = WaveSurfer.create({
+            container: waveRef.current,
+            waveColor: gradient_before,
+            progressColor: gradient_after,
+            barWidth: 2,
+            height: 80,
+            responsive: true,
+            normalize: true
+        });
 
-            wavesurfer.current.load(audioSrc);
-        }, 200);
+        wavesurfer.current.load(audioSrc);
 
-        return () => clearTimeout(timeout);
+        wavesurfer.current.on("audioprocess", () => {
+            setCurrentTime(wavesurfer.current.getCurrentTime());
+        });
+
+        // Reset icon when audio finishes
+        wavesurfer.current.on("finish", () => {
+            if (playPauseImgRef.current) {
+                playPauseImgRef.current.src = PLAY_ICON;
+            }
+        });
+
+        return () => wavesurfer.current?.destroy();
     }, [audioSrc]);
 
+    // Smooth scroll active line
     useEffect(() => {
         const containers = document.querySelectorAll(".transcript-container");
 
@@ -78,196 +102,132 @@ export function AudioTextSync({ Base64, jsondata, line }) {
             const active = container.querySelector(".word.active");
             if (!active) return;
 
-            const lineHeight = 28; // adjust if your line-height differs
-            const linesAbove = 5; // how many lines you want visible above
+            const lineHeight = 28;
+            const linesAbove = 5;
 
-            // Calculate scroll target with space for 2 lines above
             const offset =
                 active.offsetTop -
                 linesAbove * lineHeight -
-                container.clientHeight / 3; // less aggressive centering
+                container.clientHeight / 3;
 
             container.scrollTo({
                 top: Math.max(0, offset),
-                behavior: "smooth",
+                behavior: "smooth"
             });
         });
     }, [currentTime]);
 
     return (
-        <div className="audio-text-sync" style={{ padding: 20 }}>
-            {/* Waveform */}
-            <div
-                className="Audio-wave"
-                ref={waveRef}
-                style={{
-                    width: "100%",
-                    marginBottom: 20,
-                    minHeight: 100,
-                    border: "1px solid #ddd"
-                }}
-            />
+        <div className="audio-wrapper">
+            <div className="audio-player-outer">
 
-            {/* Play/Pause */}
-            <button
-                className="play-pause-btn"
-                onClick={() => wavesurfer.current && wavesurfer.current.playPause()}>
-                Play / Pause
-            </button>
+                {/* ROW FOR BUTTON + WAVE + DROPDOWN */}
+                <div className="audio-content-row">
+                    <div>
+                        {/* Play / Pause */}
+                        <button
+                            className="big-play-btn"
+                            onClick={() => {
+                                if (!wavesurfer.current) return;
 
-            <div className="Readable-container">
-                <div className="English-container">
-                    {/* English Transcript */}
-                    <div
-                        ref={transcriptRef}
-                        className="transcript-container"
-                        style={{
-                            maxHeight: "250px",
-                            overflowY: "auto",
-                            border: "1px solid #ccc",
-                            padding: "10px",
-                            borderRadius: 8,
-                        }}
-                    >
-                        <div
-                            style={{
-                                lineHeight: "1.8",
+                                const willPlay = !wavesurfer.current.isPlaying();
+                                wavesurfer.current.playPause();
+
+                                if (playPauseImgRef.current) {
+                                    playPauseImgRef.current.src =
+                                        willPlay ? PAUSE_ICON : PLAY_ICON;
+                                }
                             }}
                         >
-                            {(() => {
-                                // 1️⃣ Group words into lines of fixed length
-                                const lines = [];
-                                for (let i = 0; i < sentences.length; i += WORDS_PER_LINE) {
-                                    lines.push(sentences.slice(i, i + WORDS_PER_LINE));
-                                }
-
-                                // 2️⃣ Determine active word & active line index
-                                const activeWordIndex = sentences.findIndex(
-                                    (w) => currentTime >= w.start && currentTime <= w.end
-                                );
-
-                                const activeLineIndex = Math.floor(activeWordIndex / WORDS_PER_LINE);
-
-                                // 3️⃣ Render lines and words with dynamic Spotify-style highlighting
-                                return lines.map((line, lineIdx) => {
-                                    const isActiveLine = lineIdx === activeLineIndex;
-
-                                    return (
-                                        <div
-                                            key={lineIdx}
-                                            style={{
-                                                color: isActiveLine ? "#111" : "#bbb",
-                                                fontWeight: isActiveLine ? "600" : "400",
-                                                transition: "color 0.3s ease, font-weight 0.3s ease",
-                                                margin: "6px 0",
-                                            }}
-                                        >
-                                            {line.map((s, i) => {
-                                                const globalIdx = lineIdx * WORDS_PER_LINE + i;
-                                                const isActiveWord =
-                                                    currentTime >= s.start && currentTime <= s.end;
-
-                                                return (
-                                                    <span
-                                                        key={globalIdx}
-                                                        className={`word ${isActiveWord ? "active" : ""}`}
-                                                        style={{
-                                                            marginRight: 6,
-                                                            display: "inline-block",
-                                                            transform: isActiveWord ? "scale(1.1)" : "scale(1)",
-                                                            color: isActiveLine ? "#111" : "#bbb",
-                                                            transition:
-                                                                "transform 0.25s ease, color 0.25s ease",
-                                                        }}
-                                                    >
-                                                        {s.text}
-                                                    </span>
-                                                );
-                                            })}
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
+                            <img ref={playPauseImgRef} src={PLAY_ICON} />
+                        </button>
                     </div>
-                </div>
+                    
+                    {/* Waveform */}
+                    <div className="waveform-large" ref={waveRef}></div>
 
-                <div className="Arabic-container">
-                    {/* Arabic Transcript */}
-                    <div
-                        ref={transcriptRef}
-                        className="transcript-container"
-                        style={{
-                            maxHeight: "250px",
-                            overflowY: "auto",
-                            border: "1px solid #ccc",
-                            padding: "10px",
-                            borderRadius: 8,
-                        }}
-                    >
-                        <div
-                            style={{
-                                lineHeight: "1.8",
-                            }}
+                    {/* Dropdown */}
+                    {/* {sentences.length > 0 && (
+                        <button
+                            className="dropdown-circle"
+                            onClick={() => setShowTranscribe(!showTranscribe)}
                         >
-                            {(() => {
-                                // 1️⃣ Group words into lines of fixed length
-                                const lines = [];
-                                for (let i = 0; i < sentences.length; i += WORDS_PER_LINE) {
-                                    lines.push(sentences.slice(i, i + WORDS_PER_LINE));
-                                }
+                            <img
+                                className={`arrow-icon ${showTranscribe ? "" : "rotated"}`}
+                                src="https://image2url.com/images/1763106025867-a516cc5e-2618-44ec-a959-257dfed36342.png"
+                                alt="Toggle"
+                                style={{ width: 42, height: 42 }}
+                            />
+                        </button>
+                    )} */}
 
-                                // 2️⃣ Determine active word & active line index
-                                const activeWordIndex = sentences.findIndex(
-                                    (w) => currentTime >= w.start && currentTime <= w.end
-                                );
-
-                                const activeLineIndex = Math.floor(activeWordIndex / WORDS_PER_LINE);
-
-                                // 3️⃣ Render lines and words with dynamic Spotify-style highlighting
-                                return lines.map((line, lineIdx) => {
-                                    const isActiveLine = lineIdx === activeLineIndex;
-
-                                    return (
-                                        <div
-                                            key={lineIdx}
-                                            style={{
-                                                color: isActiveLine ? "#111" : "#bbb",
-                                                fontWeight: isActiveLine ? "600" : "400",
-                                                transition: "color 0.3s ease, font-weight 0.3s ease",
-                                                margin: "6px 0",
-                                            }}
-                                        >
-                                            {line.map((s, i) => {
-                                                const globalIdx = lineIdx * WORDS_PER_LINE + i;
-                                                const isActiveWord =
-                                                    currentTime >= s.start && currentTime <= s.end;
-
-                                                return (
-                                                    <span
-                                                        key={globalIdx}
-                                                        className={`word ${isActiveWord ? "active" : ""}`}
-                                                        style={{
-                                                            marginRight: 6,
-                                                            display: "inline-block",
-                                                            transform: isActiveWord ? "scale(1.1)" : "scale(1)",
-                                                            color: isActiveLine ? "#111" : "#bbb",
-                                                            transition:
-                                                                "transform 0.25s ease, color 0.25s ease",
-                                                        }}
-                                                    >
-                                                        {s.text}
-                                                    </span>
-                                                );
-                                            })}
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
-                    </div>
                 </div>
+
+                {/* TRANSCRIPTION SECTION */}
+                {sentences.length > 0 && (
+                    // <div className={`transcribe-wrapper ${showTranscribe ? "open" : "closed"}`}>
+                    <div className="Readable-container">
+
+                        {/* English */}
+                        {!isArabicFlag && (
+                            <div className="English-container transcript-container">
+                                {renderTranscript(sentences, currentTime, WORDS_PER_LINE, "text_en")}
+                            </div>
+                        )}
+
+                        {/* Arabic */}
+                        {isArabicFlag && (
+                            <div className="Arabic-container transcript-container">
+                                {renderTranscript(sentences, currentTime, WORDS_PER_LINE, "text_ar")}
+                            </div>
+                        )}
+
+                    </div>
+                    // </div>
+                )}
             </div>
         </div>
     );
+}
+
+/** Renders grouped transcript lines */
+function renderTranscript(sentences, currentTime, WORDS_PER_LINE, field) {
+    const lines = [];
+    for (let i = 0; i < sentences.length; i += WORDS_PER_LINE) {
+        lines.push(sentences.slice(i, i + WORDS_PER_LINE));
+    }
+
+    const activeWordIndex = sentences.findIndex(
+        w => currentTime >= w.start && currentTime <= w.end
+    );
+    const activeLineIndex = Math.floor(activeWordIndex / WORDS_PER_LINE);
+
+    return lines.map((line, lineIdx) => {
+        const isActiveLine = lineIdx === activeLineIndex;
+
+        return (
+            <div
+                key={lineIdx}
+                className="transcript-line"
+                style={{
+                    color: isActiveLine ? "#111" : "#bbb",
+                    fontWeight: isActiveLine ? "600" : "400"
+                }}
+            >
+                {line.map((w, i) => {
+                    const globalIdx = lineIdx * WORDS_PER_LINE + i;
+                    const isActiveWord = currentTime >= w.start && currentTime <= w.end;
+
+                    return (
+                        <span
+                            key={globalIdx}
+                            className={`word ${isActiveWord ? "active" : ""}`}
+                        >
+                            {w[field]}
+                        </span>
+                    );
+                })}
+            </div>
+        );
+    });
 }

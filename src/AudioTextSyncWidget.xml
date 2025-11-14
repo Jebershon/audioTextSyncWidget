@@ -16,6 +16,10 @@
                 <caption>JSON format of Transcription</caption>
                 <description>JSON encoded transcription output</description>
             </property>
+            <property key="isArabic" type="textTemplate" required="false">
+                <caption>Is Arabic</caption>
+                <description>Indicates if the transcription is in Arabic</description>
+            </property>
             <property key="Line" type="integer" defaultValue="5" required="true">
                 <caption>Number of words</caption>
                 <description>Number of words per line</description>

@@ -1,69 +1,148 @@
-/*
-Place your custom CSS here
-*/
-.widget-hello-world {}
-
-.word {
-    display: inline-block;
-    margin-right: 6px;
-    padding: 2px 4px;
-    transition:
-        transform 0.25s ease,
-        background-color 0.25s ease,
-        color 0.25s ease,
-        box-shadow 0.25s ease;
-    border-radius: 4px;
+/* ============================================
+   MAIN CARD CONTAINER
+============================================ */
+.audio-player-outer {
+    width: 100%;
+    margin-top: 20px;
+    padding: 26px 0;
+    position: relative;
+    overflow: visible;
 }
 
-/* The pretty highlight */
-.word.active {
-    background-color: rgba(255, 230, 120, 0.45);
-    /* soft warm glow */
-    color: #000;
-}
-
-.play-pause-btn {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 1px solid #aaa;
-    cursor: pointer;
-    margin-bottom: 20px;
-}
-
-.Readable-container {
+/* ============================================
+   MAIN ROW – PLAY BUTTON + WAVEFORM
+============================================ */
+.audio-content-row {
     display: flex;
+    justify-content: flex-start;
+    align-items: center;
     gap: 20px;
-    justify-content: space-between;
-    /* push children to left and right */
-    align-items: flex-start;
-    flex-direction: row;
-}
-
-/* Left column (English) */
-.English-container {
-    box-sizing: border-box;
-    text-align: left;
-    direction: ltr;
     width: 100%;
 }
 
-/* Right column (Arabic) */
-.Arabic-container {
-    box-sizing: border-box;
-    text-align: right;
-    direction: rtl;
-    width: 100%;
-    /* ensure proper Arabic flow */
+/* ============================================
+   BIG GOLD PLAY BUTTON
+============================================ */
+.big-play-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    background: #d5b06b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    padding: 0;
+    transition: 0.2s ease;
 }
 
-/* Stacked layout on narrow screens */
-@media (max-width: 640px) {
-    .Readable-container {
-        flex-direction: column;
-    }
+.big-play-btn:hover {
+    filter: brightness(1.05);
+}
 
-    .English-container,
-    .Arabic-container {
-        width: 100%;
-    }
+.big-play-btn img {
+    width: 80%;
+    filter: invert(99%) sepia(2%) saturate(0%) hue-rotate(284deg) 
+            brightness(200%) contrast(100%);
+}
+
+/* ============================================
+   WAVEFORM
+============================================ */
+.waveform-large {
+    flex: 1;
+}
+
+/* ============================================
+   DROPDOWN ARROW BUTTON
+============================================ */
+.dropdown-circle {
+    width: 120px;
+    height: 50px;
+    border-radius: 12px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 2px;
+    z-index: 20;
+    border: 2px solid #d5b06b;
+    background: #d5b06b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.dropdown-circle img {
+    width: 24px;
+    height: 24px;
+    filter: invert(100%) brightness(200%);
+}
+
+.arrow-icon.rotated {
+    transform: rotate(180deg);
+}
+
+/* ============================================
+   TRANSCRIBE CONTAINER
+============================================ */
+.Readable-container {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.transcribe-wrapper {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fffdf7;
+    gap: 20px;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+    overflow: hidden;
+}
+
+.transcribe-wrapper.closed {
+    max-height: 0;
+    padding: 0;
+    border: none;
+}
+
+.transcribe-wrapper.open {
+    max-height: 650px;
+}
+
+/* Scrollable transcript box */
+.transcript-container {
+    background: #ffffff;
+    border: 2px solid #ffeac4 !important;
+    border-radius: 16px;
+    padding: 14px !important;
+    font-size: 17px;
+    line-height: 30px;
+    max-height: 115px;
+    overflow-y: auto;
+    margin-top: 25px;
+}
+
+/* Words styling */
+.word {
+    padding: 1px 3px;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+}
+
+.word.active {
+    background: #fce6b2;
+    font-weight: 600;
+    transform: scale(1.1);
+}
+
+/* Line inactive vs active */
+.transcript-line {
+    color: #b5b5b5;
+}
+
+.transcript-line-active {
+    color: #3d3d3d;
+    font-weight: 600;
 }
